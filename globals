@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 130 40% 30%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 25% 35%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 130 40% 30%;
+    --radius: 0.5rem;
+
+    /* Sidebar specific variables */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 130 40% 40%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 25% 45%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 130 40% 40%;
+
+    /* Sidebar specific variables */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+------------
+
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Servease - Eco-Friendly Volunteering Platform",
+  description: "Connect with volunteer opportunities, earn LifeCoins, and make a positive impact on the environment.",
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="light">
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  )
+} 
+-------------
+
+import Link from "next/link"
+import Image from "next/image"
+import { ArrowRight, Award, Calendar, CheckCircle, Heart, Shield, Users } from "lucide-react"
+import { Coins } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SiteFooter } from "@/components/layout/site-footer"
+
+export default function Home() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-16 md:py-24 lg:py-32">
+          <div className="container grid items-center gap-6 md:grid-cols-2 md:gap-12">
+            <div className="flex flex-col gap-4">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                Make a <span className="text-primary">positive impact</span> on our planet
+              </h1>
+              <p className="max-w-[600px] text-lg text-muted-foreground md:text-xl">
+                Join Servease to discover volunteer opportunities, earn LifeCoins, and connect with a community of
+                eco-conscious individuals.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link href="/signup">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Get Started
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                    Log In
+                  </Button>
+                </Link>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <span>Join 10,000+ volunteers making a difference</span>
+              </div>
+            </div>
+            <div className="relative mx-auto aspect-square w-full max-w-md rounded-lg bg-muted p-4 md:p-0">
+              <Image
+                src="/placeholder.svg?height=600&width=600&text=Volunteers+planting+trees"
+                alt="Volunteers planting trees"
+                width={600}
+                height={600}
+                className="rounded-lg object-cover"
+                priority
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Impact Stats */}
+        <section className="border-y bg-muted/30 py-12 md:py-16">
+          <div className="container">
+            <div className="grid gap-8 text-center md:grid-cols-3">
+              <div className="flex flex-col items-center">
+                <h3 className="text-4xl font-bold text-primary md:text-5xl">25,000+</h3>
+                <p className="mt-2 text-muted-foreground">Volunteer Hours</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <h3 className="text-4xl font-bold text-primary md:text-5xl">1.2M</h3>
+                <p className="mt-2 text-muted-foreground">LifeCoins Earned</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <h3 className="text-4xl font-bold text-primary md:text-5xl">5,000+</h3>
+                <p className="mt-2 text-muted-foreground">Eco-Actions Completed</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-16 md:py-24">
+          <div className="container">
+            <div className="mx-auto mb-12 max-w-3xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Key Features</h2>
+              <p className="mt-4 text-muted-foreground md:text-lg">
+                Servease combines volunteering, social networking, and rewards to create a unique eco-friendly platform.
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <Heart className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">Volunteer Opportunities</CardTitle>
+                  <CardDescription>
+                    Discover and join eco-friendly volunteer opportunities in your community.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Location-based recommendations</li>
+                    <li>Filter by interests and causes</li>
+                    <li>One-click RSVP to events</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Coins className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">LifeCoins Rewards</CardTitle>
+                  <CardDescription>Earn LifeCoins for your volunteer work and eco-friendly actions.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Redeem for eco-friendly products</li>
+                    <li>Support causes with donations</li>
+                    <li>Track your impact over time</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Users className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">Community Engagement</CardTitle>
+                  <CardDescription>Connect with like-minded individuals and organizations.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Create and join teams</li>
+                    <li>Share your achievements</li>
+                    <li>Participate in challenges</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Calendar className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">Events Calendar</CardTitle>
+                  <CardDescription>Stay organized with a calendar of upcoming volunteer events.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Personalized event recommendations</li>
+                    <li>Set reminders for events</li>
+                    <li>Sync with your personal calendar</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Award className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">Achievements & Badges</CardTitle>
+                  <CardDescription>Earn badges and track your progress as you volunteer.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Unlock badges for milestones</li>
+                    <li>Compete on leaderboards</li>
+                    <li>Share achievements on social media</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Shield className="h-10 w-10 text-primary" />
+                  <CardTitle className="mt-4">Civic Score</CardTitle>
+                  <CardDescription>
+                    Build your reputation with a civic score based on your contributions.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
+                    <li>Showcase your community impact</li>
+                    <li>Unlock premium opportunities</li>
+                    <li>Gain recognition for your efforts</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-primary py-16 text-primary-foreground md:py-24">
+          <div className="container">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Ready to make a difference?</h2>
+              <p className="mt-4 text-primary-foreground/80 md:text-lg">
+                Join Servease today and start your journey towards a more sustainable future.
+              </p>
+              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+                <Link href="/signup">
+                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                    Sign Up Now
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
+                  >
+                    Learn More
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  )
+}

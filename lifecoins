@@ -1,0 +1,518 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function LifeCoinsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+} 
+
+#page.tsx
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { ArrowDown, ArrowUp, Calendar, Coins, Gift, Heart, History, Info, Plus, Wallet } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+interface Transaction {
+  id: number
+  type: "earned" | "spent"
+  amount: number
+  description: string
+  date: string
+  category: string
+}
+
+export default function LifeCoinsPage() {
+  const [showInfoDialog, setShowInfoDialog] = useState(false)
+
+  const transactions: Transaction[] = [
+    {
+      id: 1,
+      type: "earned",
+      amount: 150,
+      description: "Beach Cleanup Volunteer Event",
+      date: "June 10, 2024",
+      category: "Volunteer",
+    },
+    {
+      id: 2,
+      type: "earned",
+      amount: 100,
+      description: "Completed Eco-Action: Planted 5 Trees",
+      date: "June 8, 2024",
+      category: "Eco-Action",
+    },
+    {
+      id: 3,
+      type: "spent",
+      amount: 500,
+      description: "Redeemed for Eco-Friendly Water Bottle",
+      date: "June 5, 2024",
+      category: "Reward",
+    },
+    {
+      id: 4,
+      type: "earned",
+      amount: 200,
+      description: "Tree Planting Initiative",
+      date: "June 1, 2024",
+      category: "Volunteer",
+    },
+    {
+      id: 5,
+      type: "earned",
+      amount: 50,
+      description: "Referred a Friend",
+      date: "May 28, 2024",
+      category: "Referral",
+    },
+    {
+      id: 6,
+      type: "spent",
+      amount: 300,
+      description: "Donated to Plant a Tree",
+      date: "May 25, 2024",
+      category: "Donation",
+    },
+    {
+      id: 7,
+      type: "earned",
+      amount: 120,
+      description: "Community Garden Volunteer Event",
+      date: "May 20, 2024",
+      category: "Volunteer",
+    },
+    {
+      id: 8,
+      type: "earned",
+      amount: 80,
+      description: "Completed Eco-Action: Used Public Transport for a Week",
+      date: "May 15, 2024",
+      category: "Eco-Action",
+    },
+  ]
+
+  const totalEarned = transactions.filter((t) => t.type === "earned").reduce((sum, t) => sum + t.amount, 0)
+
+  const totalSpent = transactions.filter((t) => t.type === "spent").reduce((sum, t) => sum + t.amount, 0)
+
+  const balance = totalEarned - totalSpent
+
+  const upcomingOpportunities = [
+    {
+      title: "Beach Cleanup Day",
+      date: "June 15, 2024",
+      amount: 150,
+    },
+    {
+      title: "Tree Planting Initiative",
+      date: "June 22, 2024",
+      amount: 200,
+    },
+    {
+      title: "Community Garden Workshop",
+      date: "June 29, 2024",
+      amount: 120,
+    },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">LifeCoins</h1>
+          <p className="text-muted-foreground">Track your LifeCoins balance and transaction history.</p>
+        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" onClick={() => setShowInfoDialog(true)}>
+                <Info className="mr-2 h-4 w-4" />
+                About LifeCoins
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Learn more about how LifeCoins work</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
+      {/* Balance Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Current Balance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" />
+              <div className="text-2xl font-bold">{balance}</div>
+            </div>
+            <Progress className="mt-2" value={75} />
+            <p className="mt-1 text-xs text-muted-foreground">75% to next tier</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Earned</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <ArrowUp className="h-5 w-5 text-green-500" />
+              <div className="text-2xl font-bold">{totalEarned}</div>
+            </div>
+            <div className="mt-2 grid grid-cols-3 gap-1 text-center text-xs">
+              <div>
+                <div className="font-medium">620</div>
+                <div className="text-muted-foreground">Volunteer</div>
+              </div>
+              <div>
+                <div className="font-medium">180</div>
+                <div className="text-muted-foreground">Eco-Actions</div>
+              </div>
+              <div>
+                <div className="font-medium">50</div>
+                <div className="text-muted-foreground">Referrals</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <ArrowDown className="h-5 w-5 text-red-500" />
+              <div className="text-2xl font-bold">{totalSpent}</div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-1 text-center text-xs">
+              <div>
+                <div className="font-medium">500</div>
+                <div className="text-muted-foreground">Rewards</div>
+              </div>
+              <div>
+                <div className="font-medium">300</div>
+                <div className="text-muted-foreground">Donations</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All Transactions</TabsTrigger>
+              <TabsTrigger value="earned">Earned</TabsTrigger>
+              <TabsTrigger value="spent">Spent</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Transaction History</CardTitle>
+                    <Select defaultValue="all-time">
+                      <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Time Period" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-time">All Time</SelectItem>
+                        <SelectItem value="this-month">This Month</SelectItem>
+                        <SelectItem value="last-month">Last Month</SelectItem>
+                        <SelectItem value="this-year">This Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="space-y-1">
+                    {transactions.map((transaction) => (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between border-b p-4 last:border-0"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${
+                              transaction.type === "earned" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                            }`}
+                          >
+                            {transaction.type === "earned" ? (
+                              <Plus className="h-5 w-5" />
+                            ) : (
+                              <Minus className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium">{transaction.description}</div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{transaction.date}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {transaction.category}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          className={`text-right ${transaction.type === "earned" ? "text-green-600" : "text-red-600"}`}
+                        >
+                          <div className="font-medium">
+                            {transaction.type === "earned" ? "+" : "-"}
+                            {transaction.amount}
+                          </div>
+                          <div className="text-xs text-muted-foreground">LifeCoins</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="justify-center border-t p-4">
+                  <Button variant="outline" className="w-full">
+                    <History className="mr-2 h-4 w-4" />
+                    View All Transactions
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="earned" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>Earned LifeCoins</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="space-y-1">
+                    {transactions
+                      .filter((t) => t.type === "earned")
+                      .map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between border-b p-4 last:border-0"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+                              <Plus className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{transaction.description}</div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{transaction.date}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.category}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right text-green-600">
+                            <div className="font-medium">+{transaction.amount}</div>
+                            <div className="text-xs text-muted-foreground">LifeCoins</div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="spent" className="space-y-4 pt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle>Spent LifeCoins</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="space-y-1">
+                    {transactions
+                      .filter((t) => t.type === "spent")
+                      .map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between border-b p-4 last:border-0"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                              <Minus className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{transaction.description}</div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{transaction.date}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {transaction.category}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right text-red-600">
+                            <div className="font-medium">-{transaction.amount}</div>
+                            <div className="text-xs text-muted-foreground">LifeCoins</div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Opportunities</CardTitle>
+              <CardDescription>Earn more LifeCoins with these upcoming events</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="space-y-1">
+                {upcomingOpportunities.map((opportunity, index) => (
+                  <div key={index} className="flex items-center justify-between border-b p-4 last:border-0">
+                    <div>
+                      <div className="font-medium">{opportunity.title}</div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>{opportunity.date}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-primary">
+                      <Coins className="h-4 w-4" />
+                      <span className="font-medium">{opportunity.amount}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="justify-center border-t p-4">
+              <Button variant="outline" className="w-full">
+                <Heart className="mr-2 h-4 w-4" />
+                View All Opportunities
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              <Button className="w-full justify-start">
+                <Wallet className="mr-2 h-4 w-4" />
+                Transfer LifeCoins
+              </Button>
+              <Button className="w-full justify-start">
+                <Gift className="mr-2 h-4 w-4" />
+                Browse Rewards
+              </Button>
+              <Button className="w-full justify-start">
+                <Heart className="mr-2 h-4 w-4" />
+                Donate LifeCoins
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>About LifeCoins</DialogTitle>
+            <DialogDescription>Understanding Servease's reward system</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              LifeCoins are Servease's virtual currency that rewards you for your volunteer work and eco-friendly
+              actions. You can earn LifeCoins by:
+            </p>
+            <ul className="ml-6 list-disc text-sm text-muted-foreground">
+              <li>Participating in volunteer events</li>
+              <li>Completing eco-friendly actions</li>
+              <li>Referring friends to the platform</li>
+              <li>Achieving badges and milestones</li>
+              <li>Being active in the community</li>
+            </ul>
+            <p className="text-sm text-muted-foreground">
+              You can redeem your LifeCoins for eco-friendly products in our Rewards Store or donate them to
+              environmental causes.
+            </p>
+            <div className="rounded-md bg-muted p-3">
+              <h4 className="font-medium">LifeCoins Tiers</h4>
+              <div className="mt-2 space-y-2">
+                <div>
+                  <div className="flex justify-between text-xs">
+                    <span>Sprout (0-1,000)</span>
+                    <span>Basic rewards access</span>
+                  </div>
+                  <Progress value={100} className="h-1" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs">
+                    <span>Sapling (1,001-5,000)</span>
+                    <span>Premium rewards access</span>
+                  </div>
+                  <Progress value={25} className="h-1" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs">
+                    <span>Tree (5,001-10,000)</span>
+                    <span>Exclusive rewards access</span>
+                  </div>
+                  <Progress value={0} className="h-1" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs">
+                    <span>Forest (10,001+)</span>
+                    <span>VIP rewards access</span>
+                  </div>
+                  <Progress value={0} className="h-1" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowInfoDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function Minus(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+    </svg>
+  )
+}

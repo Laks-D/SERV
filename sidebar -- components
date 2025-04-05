@@ -1,0 +1,230 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  Award,
+  Calendar,
+  Gift,
+  Heart,
+  Home,
+  Leaf,
+  LogIn,
+  LogOut,
+  MessageSquare,
+  Settings,
+  UserPlus,
+  Users,
+  Bell,
+  Coins,
+} from "lucide-react"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { AuthModal } from "@/components/auth/auth-modal"
+import { getSession, signOut, type User } from "@/lib/auth"
+
+interface NavItem {
+  title: string
+  href: string
+  icon: React.ElementType
+  badge?: number
+}
+
+export function ServeaseSidebar({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  useEffect(() => {
+    async function loadSession() {
+      const session = await getSession()
+      setIsLoggedIn(!!session)
+      setUser(session)
+    }
+
+    loadSession()
+  }, [])
+
+  // Navigation items for logged in users
+  const navItems: NavItem[] = [
+    { title: "Home", href: "/dashboard", icon: Home },
+    { title: "Feed", href: "/feed", icon: Leaf },
+    { title: "Volunteer", href: "/volunteer", icon: Heart },
+    { title: "Events", href: "/events", icon: Calendar },
+    { title: "Teams", href: "/teams", icon: Users },
+    { title: "Messages", href: "/messages", icon: MessageSquare, badge: 3 },
+    { title: "Notifications", href: "/notifications", icon: Bell, badge: 5 },
+    { title: "Achievements", href: "/achievements", icon: Award },
+    { title: "Rewards", href: "/rewards", icon: Gift },
+    { title: "LifeCoins", href: "/lifecoins", icon: Coins },
+  ]
+
+  // Navigation items for logged out users
+  const publicNavItems: NavItem[] = [
+    { title: "Home", href: "/", icon: Home },
+    { title: "About", href: "/about", icon: Leaf },
+    { title: "Sign Up", href: "/signup", icon: UserPlus },
+    { title: "Log In", href: "/login", icon: LogIn },
+  ]
+
+  const items = isLoggedIn ? navItems : publicNavItems
+
+  const handleLogout = async () => {
+    await signOut()
+    setIsLoggedIn(false)
+    setUser(null)
+    router.push("/")
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen">
+        <Sidebar variant="floating" className="border-r border-border">
+          <SidebarHeader className="flex flex-col items-center justify-center py-6">
+            <Link href="/" className="flex items-center gap-2 px-2">
+              <Leaf className="h-6 w-6 text-primary" />
+              <span className="text-xl font-bold">Servease</span>
+            </Link>
+            {isLoggedIn && (
+              <div className="mt-4 flex w-full items-center gap-2 px-2">
+                <Input placeholder="Search..." className="h-8" />
+              </div>
+            )}
+          </SidebarHeader>
+          <SidebarSeparator />
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {isLoggedIn && user && (
+              <>
+                <SidebarSeparator />
+                <SidebarGroup>
+                  <SidebarGroupLabel>Impact Stats</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <div className="grid gap-2 px-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Volunteer Hours</span>
+                        <Badge variant="outline" className="bg-primary/10">
+                          {user.volunteerHours}h
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">LifeCoins</span>
+                        <Badge variant="outline" className="bg-primary/10">
+                          {user.lifecoins}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Eco-Actions</span>
+                        <Badge variant="outline" className="bg-primary/10">
+                          {user.ecoActions}
+                        </Badge>
+                      </div>
+                    </div>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </>
+            )}
+          </SidebarContent>
+          <SidebarFooter>
+            {isLoggedIn && user ? (
+              <div className="flex items-center justify-between p-2">
+                <div className="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">Civic Score: {user.civicScore}</span>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings">Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <div className="p-2">
+                <Button className="w-full" onClick={() => setAuthModalOpen(true)}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Log In
+                </Button>
+              </div>
+            )}
+          </SidebarFooter>
+        </Sidebar>
+
+        <div className="flex-1 p-4">
+          <div className="flex items-center justify-between md:hidden">
+            <Link href="/" className="flex items-center gap-2">
+              <Leaf className="h-6 w-6 text-primary" />
+              <span className="text-xl font-bold">Servease</span>
+            </Link>
+            <SidebarTrigger />
+          </div>
+          <main className="mt-4 md:mt-0">{children}</main>
+        </div>
+
+        <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} defaultView="login" />
+      </div>
+    </SidebarProvider>
+  )
+}

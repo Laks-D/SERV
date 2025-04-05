@@ -1,0 +1,91 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Award, Calendar, Leaf } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { createPost } from "@/lib/feed"
+import type { User } from "@/lib/auth"
+
+export function CreatePostForm({ user }: { user: User }) {
+  const router = useRouter()
+  const [content, setContent] = useState("")
+  const [postType, setPostType] = useState<"personal" | "achievement" | "event">("personal")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (!content.trim()) return
+
+    setIsSubmitting(true)
+
+    const formData = new FormData()
+    formData.append("content", content)
+    formData.append("type", postType)
+
+    await createPost(formData)
+
+    setContent("")
+    setPostType("personal")
+    setIsSubmitting(false)
+    router.refresh()
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex gap-4">
+        <Avatar>
+          <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <Textarea
+          placeholder="Share an update or achievement..."
+          className="flex-1 resize-none"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+        />
+      </div>
+      <div className="flex justify-between">
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={postType === "event" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPostType("event")}
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Event
+          </Button>
+          <Button
+            type="button"
+            variant={postType === "achievement" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPostType("achievement")}
+          >
+            <Award className="mr-2 h-4 w-4" />
+            Achievement
+          </Button>
+          <Button
+            type="button"
+            variant={postType === "personal" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPostType("personal")}
+          >
+            <Leaf className="mr-2 h-4 w-4" />
+            Eco-Action
+          </Button>
+        </div>
+        <Button type="submit" size="sm" disabled={isSubmitting || !content.trim()}>
+          {isSubmitting ? "Posting..." : "Post"}
+        </Button>
+      </div>
+    </form>
+  )
+}

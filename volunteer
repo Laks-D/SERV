@@ -1,0 +1,284 @@
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function VolunteerLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+} 
+  ------
+
+  export default function Loading() {
+  return null
+}
+
+-----------
+
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Calendar, Coins, Filter, MapPin, Search } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Slider } from "@/components/ui/slider"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+
+interface VolunteerOpportunity {
+  id: number
+  title: string
+  organization: string
+  description: string
+  image: string
+  date: string
+  location: string
+  distance: string
+  category: string
+  lifecoins: number
+  spots: number
+}
+
+export default function VolunteerPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const opportunities: VolunteerOpportunity[] = [
+    {
+      id: 1,
+      title: "Beach Cleanup Day",
+      organization: "Ocean Conservation Group",
+      description: "Join us for a day of cleaning up the local beach and protecting marine life.",
+      image: "/placeholder.svg?height=200&width=400&text=Beach+Cleanup",
+      date: "Saturday, June 15, 2024",
+      location: "Sunset Beach, CA",
+      distance: "2.5 miles away",
+      category: "Environment",
+      lifecoins: 150,
+      spots: 12,
+    },
+    {
+      id: 2,
+      title: "Tree Planting Initiative",
+      organization: "Green Earth Foundation",
+      description: "Help us restore the local forest by planting native trees in designated areas.",
+      image: "/placeholder.svg?height=200&width=400&text=Tree+Planting",
+      date: "Sunday, June 16, 2024",
+      location: "Green Valley Park, CA",
+      distance: "4.2 miles away",
+      category: "Environment",
+      lifecoins: 200,
+      spots: 8,
+    },
+    {
+      id: 3,
+      title: "Food Bank Volunteer",
+      organization: "Community Food Bank",
+      description: "Sort and package food donations to help feed families in need in our community.",
+      image: "/placeholder.svg?height=200&width=400&text=Food+Bank",
+      date: "Wednesday, June 19, 2024",
+      location: "Downtown Community Center",
+      distance: "1.8 miles away",
+      category: "Community",
+      lifecoins: 120,
+      spots: 5,
+    },
+    {
+      id: 4,
+      title: "Animal Shelter Assistant",
+      organization: "Paws & Claws Rescue",
+      description: "Help care for rescued animals by cleaning, feeding, and providing companionship.",
+      image: "/placeholder.svg?height=200&width=400&text=Animal+Shelter",
+      date: "Saturday, June 22, 2024",
+      location: "Paws & Claws Shelter",
+      distance: "5.1 miles away",
+      category: "Animals",
+      lifecoins: 180,
+      spots: 3,
+    },
+    {
+      id: 5,
+      title: "Community Garden Project",
+      organization: "Urban Greening Initiative",
+      description: "Help maintain and expand our community garden that provides fresh produce to local residents.",
+      image: "/placeholder.svg?height=200&width=400&text=Community+Garden",
+      date: "Sunday, June 23, 2024",
+      location: "Eastside Community Garden",
+      distance: "3.0 miles away",
+      category: "Environment",
+      lifecoins: 160,
+      spots: 10,
+    },
+    {
+      id: 6,
+      title: "Elderly Companion Program",
+      organization: "Senior Care Alliance",
+      description: "Spend time with elderly residents at the local care facility, playing games and sharing stories.",
+      image: "/placeholder.svg?height=200&width=400&text=Elderly+Care",
+      date: "Monday, June 24, 2024",
+      location: "Sunshine Senior Living",
+      distance: "2.2 miles away",
+      category: "Community",
+      lifecoins: 140,
+      spots: 7,
+    },
+  ]
+
+  const filteredOpportunities = opportunities.filter(
+    (opportunity) =>
+      opportunity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opportunity.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opportunity.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Volunteer Opportunities</h1>
+          <p className="text-muted-foreground">Find and join eco-friendly volunteer opportunities in your community.</p>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search opportunities..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="environment">Environment</SelectItem>
+              <SelectItem value="community">Community</SelectItem>
+              <SelectItem value="animals">Animals</SelectItem>
+              <SelectItem value="education">Education</SelectItem>
+            </SelectContent>
+          </Select>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Filter Opportunities</SheetTitle>
+                <SheetDescription>Narrow down volunteer opportunities based on your preferences.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Distance</h3>
+                  <Slider defaultValue={[10]} max={50} step={1} />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>0 miles</span>
+                    <span>50 miles</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Date</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="date-today" />
+                      <Label htmlFor="date-today">Today</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="date-tomorrow" />
+                      <Label htmlFor="date-tomorrow">Tomorrow</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="date-weekend" />
+                      <Label htmlFor="date-weekend">This Weekend</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="date-week" />
+                      <Label htmlFor="date-week">This Week</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="date-month" />
+                      <Label htmlFor="date-month">This Month</Label>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">LifeCoin Rewards</h3>
+                  <Slider defaultValue={[0]} max={500} step={10} />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>0 LC</span>
+                    <span>500+ LC</span>
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Button className="w-full">Apply Filters</Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      {/* Opportunities Grid */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredOpportunities.map((opportunity) => (
+          <Card key={opportunity.id} className="overflow-hidden">
+            <div className="relative">
+              <Image
+                src={opportunity.image || "/placeholder.svg"}
+                alt={opportunity.title}
+                width={400}
+                height={200}
+                className="aspect-video w-full object-cover"
+              />
+              <Badge className="absolute right-2 top-2 bg-primary text-primary-foreground">
+                {opportunity.category}
+              </Badge>
+            </div>
+            <CardHeader className="p-4 pb-0">
+              <CardTitle className="line-clamp-1 text-lg">{opportunity.title}</CardTitle>
+              <CardDescription className="line-clamp-1">{opportunity.organization}</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-2">
+              <p className="line-clamp-2 text-sm text-muted-foreground">{opportunity.description}</p>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                  <span>{opportunity.date}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                  <span>{opportunity.location}</span>
+                  <span className="text-muted-foreground">({opportunity.distance})</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <Coins className="h-4 w-4" />
+                  <span>{opportunity.lifecoins} LifeCoins</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex items-center justify-between p-4 pt-0">
+              <span className="text-xs text-muted-foreground">{opportunity.spots} spots left</span>
+              <Button>Sign Up</Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+

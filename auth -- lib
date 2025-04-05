@@ -1,0 +1,800 @@
+"use server"
+
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+
+// In a real app, you would use a database
+// This is a simple in-memory store for demonstration
+const users: User[] = [
+  {
+    id: "1",
+    name: "Jane Doe",
+    email: "jane@example.com",
+    password: "password123", // In a real app, this would be hashed
+    avatar: "/placeholder.svg?height=128&width=128&text=JD",
+    bio: "Environmental enthusiast passionate about conservation and sustainability.",
+    location: "San Francisco, CA",
+    interests: ["Environment", "Sustainability", "Hiking"],
+    lifecoins: 1250,
+    volunteerHours: 24,
+    ecoActions: 15,
+    civicScore: 85,
+  },
+]
+
+export type User = {
+  id: string
+  name: string
+  email: string
+  password: string
+  avatar: string
+  bio?: string
+  location?: string
+  interests?: string[]
+  lifecoins: number
+  volunteerHours: number
+  ecoActions: number
+  civicScore: number
+}
+
+export async function signIn(formData: FormData) {
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+
+  // Validate input
+  if (!email || !password) {
+    return { error: "Email and password are required" }
+  }
+
+  // Find user
+  const user = users.find((u) => u.email === email)
+
+  // Check if user exists and password matches
+  if (!user || user.password !== password) {
+    return { error: "Invalid email or password" }
+  }
+
+  // Set session cookie
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 1 week
+  cookies().set("session", user.id, { expires, httpOnly: true })
+
+  return { success: true, user: { ...user, password: undefined } }
+}
+
+export async function signUp(formData: FormData) {
+  const name = formData.get("name") as string
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  const accountType = formData.get("accountType") as string
+
+  // Validate input
+  if (!name || !email || !password) {
+    return { error: "Name, email, and password are required" }
+  }
+
+  // Check if user already exists
+  if (users.some((u) => u.email === email)) {
+    return { error: "Email already in use" }
+  }
+
+  // Create new user
+  const newUser: User = {
+    id: String(users.length + 1),
+    name,
+    email,
+    password,
+    avatar: `/placeholder.svg?height=128&width=128&text=${name.charAt(0)}${name.split(" ")[1]?.charAt(0) || ""}`,
+    lifecoins: 0,
+    volunteerHours: 0,
+    ecoActions: 0,
+    civicScore: 50,
+  }
+
+  users.push(newUser)
+
+  // Set session cookie
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 1 week
+  cookies().set("session", newUser.id, { expires, httpOnly: true })
+
+  return { success: true, user: { ...newUser, password: undefined } }
+}
+
+export async function signOut() {
+  cookies().delete("session")
+  redirect("/")
+}
+
+export async function getSession() {
+  const session = cookies().get("session")
+
+  if (!session) {
+    return null
+  }
+
+  const user = users.find((u) => u.id === session.value)
+
+  if (!user) {
+    return null
+  }
+
+  return { ...user, password: undefined }
+}
+
+export async function updateProfile(formData: FormData) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const name = formData.get("name") as string
+  const bio = formData.get("bio") as string
+  const location = formData.get("location") as string
+  const interests = formData.get("interests") as string
+
+  // Find user
+  const userIndex = users.findIndex((u) => u.id === session.id)
+
+  if (userIndex === -1) {
+    return { error: "User not found" }
+  }
+
+  // Update user
+  users[userIndex] = {
+    ...users[userIndex],
+    name: name || users[userIndex].name,
+    bio: bio || users[userIndex].bio,
+    location: location || users[userIndex].location,
+    interests: interests ? interests.split(",").map((i) => i.trim()) : users[userIndex].interests,
+  }
+
+  return { success: true, user: { ...users[userIndex], password: undefined } }
+}
+-------
+"use server"
+
+import { getSession } from "./auth"
+
+// In a real app, you would use a database
+// This is a simple in-memory store for demonstration
+const events: Event[] = [
+  {
+    id: "1",
+    title: "Beach Cleanup Day",
+    organization: "Ocean Conservation Group",
+    description: "Join us for a day of cleaning up the local beach and protecting marine life.",
+    image: "/placeholder.svg?height=200&width=400&text=Beach+Cleanup",
+    date: "June 15, 2024",
+    time: "9:00 AM - 12:00 PM",
+    location: "Sunset Beach, CA",
+    category: "Environment",
+    attendees: 45,
+    maxAttendees: 100,
+    registeredUsers: [],
+  },
+  {
+    id: "2",
+    title: "Tree Planting Initiative",
+    organization: "Green Earth Foundation",
+    description: "Help us restore the local forest by planting native trees in designated areas.",
+    image: "/placeholder.svg?height=200&width=400&text=Tree+Planting",
+    date: "June 16, 2024",
+    time: "10:00 AM - 2:00 PM",
+    location: "Green Valley Park, CA",
+    category: "Environment",
+    attendees: 32,
+    maxAttendees: 50,
+    registeredUsers: [],
+  },
+  {
+    id: "3",
+    title: "Community Garden Workshop",
+    organization: "Urban Greening Initiative",
+    description: "Learn sustainable gardening techniques and help maintain our community garden.",
+    image: "/placeholder.svg?height=200&width=400&text=Garden+Workshop",
+    date: "June 22, 2024",
+    time: "1:00 PM - 4:00 PM",
+    location: "Eastside Community Garden",
+    category: "Education",
+    attendees: 18,
+    maxAttendees: 30,
+    registeredUsers: ["1"], // Jane Doe is registered
+  },
+  {
+    id: "4",
+    title: "Eco-Friendly Living Workshop",
+    organization: "Sustainable Living Alliance",
+    description: "Learn practical tips for reducing your environmental footprint in daily life.",
+    image: "/placeholder.svg?height=200&width=400&text=Eco+Workshop",
+    date: "June 29, 2024",
+    time: "11:00 AM - 1:00 PM",
+    location: "Community Center, Downtown",
+    category: "Education",
+    attendees: 25,
+    maxAttendees: 40,
+    registeredUsers: [],
+  },
+  {
+    id: "5",
+    title: "River Cleanup Project",
+    organization: "Watershed Protection Group",
+    description: "Help clean up our local river and learn about water conservation.",
+    image: "/placeholder.svg?height=200&width=400&text=River+Cleanup",
+    date: "July 6, 2024",
+    time: "8:30 AM - 12:30 PM",
+    location: "Riverside Park",
+    category: "Environment",
+    attendees: 15,
+    maxAttendees: 60,
+    registeredUsers: [],
+  },
+  {
+    id: "6",
+    title: "Wildlife Conservation Talk",
+    organization: "Wildlife Protection Society",
+    description: "Join us for an informative talk about local wildlife conservation efforts.",
+    image: "/placeholder.svg?height=200&width=400&text=Wildlife+Talk",
+    date: "July 12, 2024",
+    time: "6:00 PM - 8:00 PM",
+    location: "Natural History Museum",
+    category: "Education",
+    attendees: 40,
+    maxAttendees: 100,
+    registeredUsers: [],
+  },
+]
+
+export type Event = {
+  id: string
+  title: string
+  organization: string
+  description: string
+  image: string
+  date: string
+  time: string
+  location: string
+  category: string
+  attendees: number
+  maxAttendees: number
+  registeredUsers: string[]
+}
+
+export async function getEvents() {
+  // In a real app, you would fetch from a database
+  return events
+}
+
+export async function getEvent(id: string) {
+  // In a real app, you would fetch from a database
+  return events.find((e) => e.id === id) || null
+}
+
+export async function registerForEvent(eventId: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const eventIndex = events.findIndex((e) => e.id === eventId)
+
+  if (eventIndex === -1) {
+    return { error: "Event not found" }
+  }
+
+  const event = events[eventIndex]
+
+  // Check if user is already registered
+  if (event.registeredUsers.includes(session.id)) {
+    return { error: "Already registered for this event" }
+  }
+
+  // Check if event is full
+  if (event.attendees >= event.maxAttendees) {
+    return { error: "Event is full" }
+  }
+
+  // Register user
+  events[eventIndex] = {
+    ...event,
+    attendees: event.attendees + 1,
+    registeredUsers: [...event.registeredUsers, session.id],
+  }
+
+  return { success: true, event: events[eventIndex] }
+}
+
+export async function cancelRegistration(eventId: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const eventIndex = events.findIndex((e) => e.id === eventId)
+
+  if (eventIndex === -1) {
+    return { error: "Event not found" }
+  }
+
+  const event = events[eventIndex]
+
+  // Check if user is registered
+  if (!event.registeredUsers.includes(session.id)) {
+    return { error: "Not registered for this event" }
+  }
+
+  // Cancel registration
+  events[eventIndex] = {
+    ...event,
+    attendees: event.attendees - 1,
+    registeredUsers: event.registeredUsers.filter((id) => id !== session.id),
+  }
+
+  return { success: true, event: events[eventIndex] }
+}
+----------
+"use server"
+
+import { getSession } from "./auth"
+
+// In a real app, you would use a database
+// This is a simple in-memory store for demonstration
+const posts: Post[] = [
+  {
+    id: "1",
+    authorId: "1",
+    content:
+      "Just completed my 10th volunteer event this month! So proud to be making a difference in our community. #Volunteering #Community",
+    image: "/placeholder.svg?height=400&width=600&text=Volunteer+Event",
+    likes: 24,
+    comments: 5,
+    shares: 2,
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    type: "personal",
+  },
+  {
+    id: "2",
+    authorId: "2",
+    content:
+      "Join our upcoming beach cleanup this Saturday! We need volunteers to help protect our marine ecosystem. Earn 200 LifeCoins for participating!",
+    image: "/placeholder.svg?height=400&width=600&text=Beach+Cleanup",
+    likes: 45,
+    comments: 12,
+    shares: 8,
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+    type: "promotional",
+  },
+  {
+    id: "3",
+    authorId: "3",
+    content: "Just earned the 'Tree Planter' badge after participating in the reforestation project! 🌳",
+    likes: 18,
+    comments: 3,
+    shares: 1,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    type: "achievement",
+    badge: {
+      icon: "Leaf",
+      label: "Tree Planter",
+    },
+  },
+  {
+    id: "4",
+    authorId: "4",
+    content:
+      "Our team just reached 1000 volunteer hours collectively! Thanks to everyone who contributed to this milestone.",
+    image: "/placeholder.svg?height=400&width=600&text=Team+Celebration",
+    likes: 67,
+    comments: 15,
+    shares: 9,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    type: "personal",
+  },
+  {
+    id: "5",
+    authorId: "5",
+    content:
+      "We're looking for volunteers for our annual park restoration project. Help us maintain the green spaces in our city! 150 LifeCoins reward.",
+    image: "/placeholder.svg?height=400&width=600&text=Park+Restoration",
+    likes: 32,
+    comments: 8,
+    shares: 14,
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+    type: "promotional",
+  },
+]
+
+export type Post = {
+  id: string
+  authorId: string
+  content: string
+  image?: string
+  likes: number
+  comments: number
+  shares: number
+  createdAt: string
+  type: "personal" | "promotional" | "achievement"
+  badge?: {
+    icon: string
+    label: string
+  }
+}
+
+export async function getPosts() {
+  // In a real app, you would fetch from a database
+  return posts
+}
+
+export async function createPost(formData: FormData) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const content = formData.get("content") as string
+  const type = formData.get("type") as "personal" | "promotional" | "achievement"
+  const image = formData.get("image") as string | null
+
+  if (!content) {
+    return { error: "Content is required" }
+  }
+
+  const newPost: Post = {
+    id: String(posts.length + 1),
+    authorId: session.id,
+    content,
+    image: image || undefined,
+    likes: 0,
+    comments: 0,
+    shares: 0,
+    createdAt: new Date().toISOString(),
+    type: type || "personal",
+  }
+
+  posts.unshift(newPost) // Add to beginning of array
+
+  return { success: true, post: newPost }
+}
+
+export async function likePost(postId: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const postIndex = posts.findIndex((p) => p.id === postId)
+
+  if (postIndex === -1) {
+    return { error: "Post not found" }
+  }
+
+  // In a real app, you would check if the user has already liked the post
+  posts[postIndex].likes += 1
+
+  return { success: true, post: posts[postIndex] }
+}
+
+export async function commentOnPost(postId: string, comment: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const postIndex = posts.findIndex((p) => p.id === postId)
+
+  if (postIndex === -1) {
+    return { error: "Post not found" }
+  }
+
+  // In a real app, you would store the comment in a separate collection
+  posts[postIndex].comments += 1
+
+  return { success: true, post: posts[postIndex] }
+}
+-----
+"use server"
+
+import { getSession } from "./auth"
+
+// In a real app, you would use a database
+// This is a simple in-memory store for demonstration
+const posts: Post[] = [
+  {
+    id: "1",
+    authorId: "1",
+    content:
+      "Just completed my 10th volunteer event this month! So proud to be making a difference in our community. #Volunteering #Community",
+    image: "/placeholder.svg?height=400&width=600&text=Volunteer+Event",
+    likes: 24,
+    comments: 5,
+    shares: 2,
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    type: "personal",
+  },
+  {
+    id: "2",
+    authorId: "2",
+    content:
+      "Join our upcoming beach cleanup this Saturday! We need volunteers to help protect our marine ecosystem. Earn 200 LifeCoins for participating!",
+    image: "/placeholder.svg?height=400&width=600&text=Beach+Cleanup",
+    likes: 45,
+    comments: 12,
+    shares: 8,
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+    type: "promotional",
+  },
+  {
+    id: "3",
+    authorId: "3",
+    content: "Just earned the 'Tree Planter' badge after participating in the reforestation project! 🌳",
+    likes: 18,
+    comments: 3,
+    shares: 1,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    type: "achievement",
+    badge: {
+      icon: "Leaf",
+      label: "Tree Planter",
+    },
+  },
+  {
+    id: "4",
+    authorId: "4",
+    content:
+      "Our team just reached 1000 volunteer hours collectively! Thanks to everyone who contributed to this milestone.",
+    image: "/placeholder.svg?height=400&width=600&text=Team+Celebration",
+    likes: 67,
+    comments: 15,
+    shares: 9,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    type: "personal",
+  },
+  {
+    id: "5",
+    authorId: "5",
+    content:
+      "We're looking for volunteers for our annual park restoration project. Help us maintain the green spaces in our city! 150 LifeCoins reward.",
+    image: "/placeholder.svg?height=400&width=600&text=Park+Restoration",
+    likes: 32,
+    comments: 8,
+    shares: 14,
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+    type: "promotional",
+  },
+]
+
+export type Post = {
+  id: string
+  authorId: string
+  content: string
+  image?: string
+  likes: number
+  comments: number
+  shares: number
+  createdAt: string
+  type: "personal" | "promotional" | "achievement"
+  badge?: {
+    icon: string
+    label: string
+  }
+}
+
+export async function getPosts() {
+  // In a real app, you would fetch from a database
+  return posts
+}
+
+export async function createPost(formData: FormData) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const content = formData.get("content") as string
+  const type = formData.get("type") as "personal" | "promotional" | "achievement"
+  const image = formData.get("image") as string | null
+
+  if (!content) {
+    return { error: "Content is required" }
+  }
+
+  const newPost: Post = {
+    id: String(posts.length + 1),
+    authorId: session.id,
+    content,
+    image: image || undefined,
+    likes: 0,
+    comments: 0,
+    shares: 0,
+    createdAt: new Date().toISOString(),
+    type: type || "personal",
+  }
+
+  posts.unshift(newPost) // Add to beginning of array
+
+  return { success: true, post: newPost }
+}
+
+export async function likePost(postId: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const postIndex = posts.findIndex((p) => p.id === postId)
+
+  if (postIndex === -1) {
+    return { error: "Post not found" }
+  }
+
+  // In a real app, you would check if the user has already liked the post
+  posts[postIndex].likes += 1
+
+  return { success: true, post: posts[postIndex] }
+}
+
+export async function commentOnPost(postId: string, comment: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  const postIndex = posts.findIndex((p) => p.id === postId)
+
+  if (postIndex === -1) {
+    return { error: "Post not found" }
+  }
+
+  // In a real app, you would store the comment in a separate collection
+  posts[postIndex].comments += 1
+
+  return { success: true, post: posts[postIndex] }
+}
+---------
+"use server"
+
+import { getSession } from "./auth"
+
+// In a real app, you would use a database
+// This is a simple in-memory store for demonstration
+let messages: Message[] = [
+  {
+    id: "1",
+    senderId: "2",
+    receiverId: "1",
+    text: "Hi there! Are you coming to the beach cleanup this weekend?",
+    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
+    read: true,
+  },
+  {
+    id: "2",
+    senderId: "1",
+    receiverId: "2",
+    text: "Hey Sarah! Yes, I'm planning to be there. What time does it start again?",
+    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
+    read: true,
+  },
+  {
+    id: "3",
+    senderId: "2",
+    receiverId: "1",
+    text: "Great! It starts at 9 AM at Sunset Beach. We'll provide all the equipment, just bring water and sunscreen.",
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
+    read: true,
+  },
+  {
+    id: "4",
+    senderId: "1",
+    receiverId: "2",
+    text: "Perfect, I'll be there. Are there any specific areas we'll be focusing on?",
+    createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+    read: true,
+  },
+  {
+    id: "5",
+    senderId: "2",
+    receiverId: "1",
+    text: "We'll be focusing on the north side of the beach where there's been a lot of plastic waste washing up. We're expecting about 30 volunteers.",
+    createdAt: new Date().toISOString(), // Just now
+    read: false,
+  },
+]
+
+export type Message = {
+  id: string
+  senderId: string
+  receiverId: string
+  text: string
+  createdAt: string
+  read: boolean
+}
+
+export async function getConversations() {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  // Get all messages where the user is either the sender or receiver
+  const userMessages = messages.filter((m) => m.senderId === session.id || m.receiverId === session.id)
+
+  // Group messages by conversation partner
+  const conversations: Record<string, Message[]> = {}
+
+  userMessages.forEach((message) => {
+    const partnerId = message.senderId === session.id ? message.receiverId : message.senderId
+
+    if (!conversations[partnerId]) {
+      conversations[partnerId] = []
+    }
+
+    conversations[partnerId].push(message)
+  })
+
+  // Sort messages in each conversation by createdAt
+  Object.keys(conversations).forEach((partnerId) => {
+    conversations[partnerId].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  })
+
+  return { success: true, conversations }
+}
+
+export async function getMessages(partnerId: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  // Get all messages between the user and the partner
+  const conversationMessages = messages.filter(
+    (m) =>
+      (m.senderId === session.id && m.receiverId === partnerId) ||
+      (m.senderId === partnerId && m.receiverId === session.id),
+  )
+
+  // Sort messages by createdAt
+  conversationMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+
+  // Mark messages as read
+  messages = messages.map((m) =>
+    m.senderId === partnerId && m.receiverId === session.id && !m.read ? { ...m, read: true } : m,
+  )
+
+  return { success: true, messages: conversationMessages }
+}
+
+export async function sendMessage(partnerId: string, text: string) {
+  const session = await getSession()
+
+  if (!session) {
+    return { error: "Not authenticated" }
+  }
+
+  if (!text.trim()) {
+    return { error: "Message cannot be empty" }
+  }
+
+  // Create new message
+  const newMessage: Message = {
+    id: String(messages.length + 1),
+    senderId: session.id,
+    receiverId: partnerId,
+    text,
+    createdAt: new Date().toISOString(),
+    read: false,
+  }
+
+  messages.push(newMessage)
+
+  return { success: true, message: newMessage }
+}
+

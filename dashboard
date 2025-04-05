@@ -1,0 +1,204 @@
+#layout.tsx
+  import type React from "react"
+import { redirect } from "next/navigation"
+import { getSession } from "@/lib/auth"
+import { ServeaseSidebar } from "@/components/servease-sidebar"
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await getSession()
+
+  if (!session) {
+    redirect("/login")
+  }
+
+  return <ServeaseSidebar>{children}</ServeaseSidebar>
+}
+
+#page.tsx
+  import Link from "next/link"
+import Image from "next/image"
+import { ArrowRight, Award, Calendar, Heart, Leaf, Users, Clock, Coins, MapPin } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+export default function DashboardPage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, Jane! Here's what's happening with your account.</p>
+        </div>
+        <Link href="/volunteer">
+          <Button>
+            Find Opportunities
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Volunteer Hours</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">24h</div>
+            <p className="text-xs text-muted-foreground">+2.5% from last month</p>
+            <Progress className="mt-2" value={65} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">LifeCoins</CardTitle>
+            <Coins className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,250</div>
+            <p className="text-xs text-muted-foreground">+150 earned this month</p>
+            <Progress className="mt-2" value={45} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Eco-Actions</CardTitle>
+            <Leaf className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">15</div>
+            <p className="text-xs text-muted-foreground">+3 from last week</p>
+            <Progress className="mt-2" value={35} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Civic Score</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">85</div>
+            <p className="text-xs text-muted-foreground">Top 15% in your area</p>
+            <Progress className="mt-2" value={85} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="recommendations">
+        <TabsList>
+          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
+          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+        </TabsList>
+        <TabsContent value="recommendations" className="space-y-4">
+          <h2 className="text-lg font-semibold">Recommended for You</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardHeader className="p-0">
+                  <Image
+                    src={`/placeholder.svg?height=200&width=400&text=Volunteer+Opportunity+${i}`}
+                    alt={`Volunteer Opportunity ${i}`}
+                    width={400}
+                    height={200}
+                    className="aspect-video rounded-t-lg object-cover"
+                  />
+                </CardHeader>
+                <CardContent className="p-4">
+                  <CardTitle className="text-lg">Beach Cleanup Day</CardTitle>
+                  <CardDescription className="line-clamp-2 mt-2">
+                    Join us for a day of cleaning up the local beach and protecting marine life.
+                  </CardDescription>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>Saturday, June 15, 2024</span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span>Sunset Beach, CA</span>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Coins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Earn 150 LifeCoins</span>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                  <Button size="sm" className="w-full">
+                    Sign Up
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <Link href="/volunteer">
+              <Button variant="outline">View All Opportunities</Button>
+            </Link>
+          </div>
+        </TabsContent>
+        <TabsContent value="upcoming" className="space-y-4">
+          <h2 className="text-lg font-semibold">Your Upcoming Events</h2>
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <Card key={i}>
+                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Tree Planting Initiative</h3>
+                    <p className="text-sm text-muted-foreground">Saturday, June 22, 2024 • 9:00 AM - 12:00 PM</p>
+                    <p className="text-sm text-muted-foreground">Green Valley Park, 123 Nature Way</p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button size="sm" variant="outline">
+                      View Details
+                    </Button>
+                    <Button size="sm">Check In</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <Link href="/events">
+              <Button variant="outline">View All Events</Button>
+            </Link>
+          </div>
+        </TabsContent>
+        <TabsContent value="activity" className="space-y-4">
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
+          <div className="space-y-4">
+            {[
+              { icon: Award, title: "Earned 'First Volunteer' Badge", time: "2 days ago" },
+              { icon: Heart, title: "Completed Beach Cleanup Volunteer Event", time: "5 days ago" },
+              { icon: Coins, title: "Earned 150 LifeCoins", time: "5 days ago" },
+              { icon: Users, title: "Joined 'Green Warriors' Team", time: "1 week ago" },
+              { icon: Leaf, title: "Completed Eco-Action: Planted 5 Trees", time: "2 weeks ago" },
+            ].map((activity, i) => (
+              <Card key={i}>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <activity.icon className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">{activity.title}</p>
+                    <p className="text-sm text-muted-foreground">{activity.time}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

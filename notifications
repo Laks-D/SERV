@@ -1,0 +1,391 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function NotificationsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+#page.tsx
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { Award, Bell, Calendar, Check, Heart, MessageSquare, Settings, Trash2, User, Users } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
+interface Notification {
+  id: number
+  type: "message" | "event" | "friend" | "achievement" | "volunteer" | "team" | "system"
+  title: string
+  description: string
+  time: string
+  read: boolean
+  actionable?: boolean
+  icon: React.ElementType
+  user?: {
+    name: string
+    avatar: string
+  }
+}
+
+export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: 1,
+      type: "message",
+      title: "New message from Sarah Johnson",
+      description: "Are you coming to the beach cleanup this weekend?",
+      time: "10 minutes ago",
+      read: false,
+      actionable: true,
+      icon: MessageSquare,
+      user: {
+        name: "Sarah Johnson",
+        avatar: "/placeholder.svg?height=40&width=40&text=SJ",
+      },
+    },
+    {
+      id: 2,
+      type: "event",
+      title: "Event Reminder: Beach Cleanup",
+      description: "The beach cleanup event is tomorrow at 9 AM. Don't forget to bring water and sunscreen!",
+      time: "1 hour ago",
+      read: false,
+      actionable: true,
+      icon: Calendar,
+    },
+    {
+      id: 3,
+      type: "achievement",
+      title: "New Badge Earned",
+      description:
+        "Congratulations! You've earned the 'Tree Planter' badge for participating in 5 reforestation events.",
+      time: "3 hours ago",
+      read: true,
+      icon: Award,
+    },
+    {
+      id: 4,
+      type: "friend",
+      title: "Friend Request",
+      description: "Michael Chen wants to connect with you.",
+      time: "5 hours ago",
+      read: false,
+      actionable: true,
+      icon: User,
+      user: {
+        name: "Michael Chen",
+        avatar: "/placeholder.svg?height=40&width=40&text=MC",
+      },
+    },
+    {
+      id: 5,
+      type: "volunteer",
+      title: "New Volunteer Opportunity",
+      description: "A new volunteer opportunity has been posted in your area: Tree Planting Initiative.",
+      time: "Yesterday",
+      read: true,
+      icon: Heart,
+    },
+    {
+      id: 6,
+      type: "team",
+      title: "Team Invitation",
+      description: "You've been invited to join the 'Green Warriors' team.",
+      time: "Yesterday",
+      read: true,
+      actionable: true,
+      icon: Users,
+    },
+    {
+      id: 7,
+      type: "system",
+      title: "System Update",
+      description: "We've updated our privacy policy. Please review the changes.",
+      time: "2 days ago",
+      read: true,
+      icon: Bell,
+    },
+  ])
+
+  const unreadCount = notifications.filter((n) => !n.read).length
+
+  const markAsRead = (id: number) => {
+    setNotifications(
+      notifications.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)),
+    )
+  }
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map((notification) => ({ ...notification, read: true })))
+  }
+
+  const deleteNotification = (id: number) => {
+    setNotifications(notifications.filter((notification) => notification.id !== id))
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+          <p className="text-muted-foreground">Stay updated with your activity and connections.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={markAllAsRead} disabled={unreadCount === 0}>
+            <Check className="mr-2 h-4 w-4" />
+            Mark All as Read
+          </Button>
+          <Button variant="outline">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
+        </div>
+      </div>
+
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">
+            All
+            {unreadCount > 0 && <Badge className="ml-2 bg-primary text-primary-foreground">{unreadCount}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="unread">Unread</TabsTrigger>
+          <TabsTrigger value="mentions">Mentions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-4 pt-4">
+          {notifications.map((notification) => (
+            <NotificationCard
+              key={notification.id}
+              notification={notification}
+              onMarkAsRead={markAsRead}
+              onDelete={deleteNotification}
+            />
+          ))}
+
+          {notifications.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+              <Bell className="h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-medium">No Notifications</h3>
+              <p className="mt-2 text-sm text-muted-foreground">You don't have any notifications at the moment.</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="unread" className="space-y-4 pt-4">
+          {notifications
+            .filter((n) => !n.read)
+            .map((notification) => (
+              <NotificationCard
+                key={notification.id}
+                notification={notification}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            ))}
+
+          {notifications.filter((n) => !n.read).length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+              <Check className="h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-medium">All Caught Up</h3>
+              <p className="mt-2 text-sm text-muted-foreground">You've read all your notifications.</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="mentions" className="space-y-4 pt-4">
+          {notifications
+            .filter((n) => n.type === "message" || n.type === "friend")
+            .map((notification) => (
+              <NotificationCard
+                key={notification.id}
+                notification={notification}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            ))}
+
+          {notifications.filter((n) => n.type === "message" || n.type === "friend").length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+              <User className="h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-medium">No Mentions</h3>
+              <p className="mt-2 text-sm text-muted-foreground">You don't have any mentions at the moment.</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Notification Settings</CardTitle>
+          <CardDescription>Customize how you receive notifications.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="email-notifications">Email Notifications</Label>
+              <p className="text-sm text-muted-foreground">Receive notifications via email.</p>
+            </div>
+            <Switch id="email-notifications" defaultChecked />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="push-notifications">Push Notifications</Label>
+              <p className="text-sm text-muted-foreground">Receive notifications on your device.</p>
+            </div>
+            <Switch id="push-notifications" defaultChecked />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="event-reminders">Event Reminders</Label>
+              <p className="text-sm text-muted-foreground">Receive reminders for upcoming events.</p>
+            </div>
+            <Switch id="event-reminders" defaultChecked />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="friend-requests">Friend Requests</Label>
+              <p className="text-sm text-muted-foreground">Receive notifications for friend requests.</p>
+            </div>
+            <Switch id="friend-requests" defaultChecked />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full">Save Settings</Button>
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}
+
+function NotificationCard({
+  notification,
+  onMarkAsRead,
+  onDelete,
+}: {
+  notification: Notification
+  onMarkAsRead: (id: number) => void
+  onDelete: (id: number) => void
+}) {
+  const { id, type, title, description, time, read, actionable, icon: Icon, user } = notification
+
+  return (
+    <Card className={`relative overflow-hidden ${!read ? "border-primary/50 bg-primary/5" : ""}`}>
+      {!read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
+      <CardContent className="flex items-start gap-4 p-4">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-medium">{title}</h3>
+              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{time}</p>
+            </div>
+            <div className="flex items-center gap-1">
+              {!read && (
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onMarkAsRead(id)}>
+                  <Check className="h-4 w-4" />
+                  <span className="sr-only">Mark as read</span>
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="19" cy="12" r="1" />
+                      <circle cx="5" cy="12" r="1" />
+                    </svg>
+                    <span className="sr-only">More options</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onMarkAsRead(id)}>
+                    Mark as {read ? "unread" : "read"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete(id)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {actionable && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {type === "message" && (
+                <>
+                  <Button size="sm">Reply</Button>
+                  <Button size="sm" variant="outline">
+                    View Message
+                  </Button>
+                </>
+              )}
+              {type === "event" && (
+                <>
+                  <Button size="sm">RSVP</Button>
+                  <Button size="sm" variant="outline">
+                    View Event
+                  </Button>
+                </>
+              )}
+              {type === "friend" && (
+                <>
+                  <Button size="sm">Accept</Button>
+                  <Button size="sm" variant="outline">
+                    Decline
+                  </Button>
+                </>
+              )}
+              {type === "team" && (
+                <>
+                  <Button size="sm">Join Team</Button>
+                  <Button size="sm" variant="outline">
+                    Decline
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+          {user && (
+            <div className="mt-3 flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="text-sm">{user.name}</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

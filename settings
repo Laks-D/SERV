@@ -1,0 +1,693 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function SettingsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+#page.tsx
+"use client"
+
+import { Badge } from "@/components/ui/badge"
+
+import { useState } from "react"
+import { Bell, Globe, Key, Lock, Save, Shield, User } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState("profile")
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">Manage your account settings and preferences.</p>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
+          <TabsTrigger value="profile">
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="account">
+            <Key className="mr-2 h-4 w-4" />
+            Account
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="mr-2 h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="privacy">
+            <Lock className="mr-2 h-4 w-4" />
+            Privacy
+          </TabsTrigger>
+          <TabsTrigger value="preferences">
+            <Globe className="mr-2 h-4 w-4" />
+            Preferences
+          </TabsTrigger>
+          <TabsTrigger value="security">
+            <Shield className="mr-2 h-4 w-4" />
+            Security
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>Update your profile information and how others see you on the platform.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col items-center space-y-2 sm:flex-row sm:items-start sm:space-x-4 sm:space-y-0">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src="/placeholder.svg?height=96&width=96&text=JD" alt="Jane Doe" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-1 flex-col justify-center space-y-2">
+                  <div className="text-center sm:text-left">
+                    <p className="text-sm text-muted-foreground">
+                      Upload a new profile picture. JPG, GIF or PNG. Max size of 2MB.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button size="sm" variant="outline">
+                      Upload New Image
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      Remove Image
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" defaultValue="Jane Doe" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" defaultValue="janedoe" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" defaultValue="jane.doe@example.com" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  placeholder="Tell us about yourself"
+                  defaultValue="Environmental enthusiast passionate about conservation and sustainability. I love hiking, gardening, and volunteering for eco-friendly causes."
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Brief description for your profile. Maximum 200 characters.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input id="location" defaultValue="San Francisco, CA" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interests">Interests</Label>
+                <Textarea
+                  id="interests"
+                  placeholder="What are you interested in?"
+                  defaultValue="Environmental conservation, sustainable living, hiking, gardening, wildlife protection"
+                  rows={2}
+                />
+                <p className="text-xs text-muted-foreground">Separate interests with commas.</p>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Profiles</CardTitle>
+              <CardDescription>Connect your social media accounts to your profile.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="twitter">Twitter</Label>
+                <Input id="twitter" placeholder="@username" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input id="instagram" placeholder="username" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkedin">LinkedIn</Label>
+                <Input id="linkedin" placeholder="profile-url" />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="account" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>Manage your account settings and preferences.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input id="current-password" type="password" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input id="new-password" type="password" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input id="confirm-password" type="password" />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Update Password
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Type</CardTitle>
+              <CardDescription>Change your account type.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="account-type">Account Type</Label>
+                <Select defaultValue="individual">
+                  <SelectTrigger id="account-type">
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Organizations can post volunteer opportunities and manage teams.
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Update Account Type
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Danger Zone</CardTitle>
+              <CardDescription>Irreversible and destructive actions.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border border-destructive/50 p-4">
+                <h3 className="text-lg font-medium text-destructive">Delete Account</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="mt-4">
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account and remove your data
+                        from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Settings</CardTitle>
+              <CardDescription>Manage how you receive notifications.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Email Notifications</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="email-events">Event Reminders</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive reminders about upcoming events you've registered for.
+                      </p>
+                    </div>
+                    <Switch id="email-events" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="email-messages">New Messages</Label>
+                      <p className="text-sm text-muted-foreground">Receive notifications when you get new messages.</p>
+                    </div>
+                    <Switch id="email-messages" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="email-friends">Friend Requests</Label>
+                      <p className="text-sm text-muted-foreground">Receive notifications for new friend requests.</p>
+                    </div>
+                    <Switch id="email-friends" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="email-opportunities">New Opportunities</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive notifications about new volunteer opportunities in your area.
+                      </p>
+                    </div>
+                    <Switch id="email-opportunities" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="email-marketing">Marketing Emails</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive marketing and promotional emails from Servease.
+                      </p>
+                    </div>
+                    <Switch id="email-marketing" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Push Notifications</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push-events">Event Reminders</Label>
+                      <p className="text-sm text-muted-foreground">Receive push notifications for upcoming events.</p>
+                    </div>
+                    <Switch id="push-events" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push-messages">New Messages</Label>
+                      <p className="text-sm text-muted-foreground">Receive push notifications for new messages.</p>
+                    </div>
+                    <Switch id="push-messages" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push-friends">Friend Requests</Label>
+                      <p className="text-sm text-muted-foreground">Receive push notifications for friend requests.</p>
+                    </div>
+                    <Switch id="push-friends" defaultChecked />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="privacy" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Privacy Settings</CardTitle>
+              <CardDescription>Manage your privacy settings and control who can see your information.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Profile Visibility</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-visibility">Who can see your profile</Label>
+                    <Select defaultValue="everyone">
+                      <SelectTrigger id="profile-visibility">
+                        <SelectValue placeholder="Select visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="everyone">Everyone</SelectItem>
+                        <SelectItem value="friends">Friends Only</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-visibility">Who can see your activity</Label>
+                    <Select defaultValue="everyone">
+                      <SelectTrigger id="activity-visibility">
+                        <SelectValue placeholder="Select visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="everyone">Everyone</SelectItem>
+                        <SelectItem value="friends">Friends Only</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="show-email">Show email on profile</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow others to see your email address on your profile.
+                      </p>
+                    </div>
+                    <Switch id="show-email" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="show-location">Show location on profile</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow others to see your location on your profile.
+                      </p>
+                    </div>
+                    <Switch id="show-location" defaultChecked />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Data Usage</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="data-analytics">Analytics</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow us to collect anonymous usage data to improve our service.
+                      </p>
+                    </div>
+                    <Switch id="data-analytics" defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="data-personalization">Personalization</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow us to use your data to personalize your experience.
+                      </p>
+                    </div>
+                    <Switch id="data-personalization" defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="data-third-party">Third-Party Sharing</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow us to share your data with trusted third parties.
+                      </p>
+                    </div>
+                    <Switch id="data-third-party" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Data Export & Deletion</CardTitle>
+              <CardDescription>Export or delete your data from our platform.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border p-4">
+                <h3 className="text-lg font-medium">Export Your Data</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Download a copy of your data including profile information, activity history, and more.
+                </p>
+                <Button variant="outline" className="mt-4">
+                  Request Data Export
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preferences" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferences</CardTitle>
+              <CardDescription>Customize your experience on the platform.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Display</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="theme">Theme</Label>
+                    <Select defaultValue="system">
+                      <SelectTrigger id="theme">
+                        <SelectValue placeholder="Select theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <Select defaultValue="en">
+                      <SelectTrigger id="language">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="zh">Chinese</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Volunteer Preferences</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferred-categories">Preferred Categories</Label>
+                    <Select defaultValue="environment">
+                      <SelectTrigger id="preferred-categories">
+                        <SelectValue placeholder="Select categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="environment">Environment</SelectItem>
+                        <SelectItem value="community">Community</SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                        <SelectItem value="animals">Animals</SelectItem>
+                        <SelectItem value="health">Health</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">We'll prioritize opportunities in these categories.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="max-distance">Maximum Distance</Label>
+                    <Select defaultValue="10">
+                      <SelectTrigger id="max-distance">
+                        <SelectValue placeholder="Select distance" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 miles</SelectItem>
+                        <SelectItem value="10">10 miles</SelectItem>
+                        <SelectItem value="25">25 miles</SelectItem>
+                        <SelectItem value="50">50 miles</SelectItem>
+                        <SelectItem value="100">100+ miles</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      We'll prioritize opportunities within this distance.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="availability">Availability</Label>
+                    <Select defaultValue="weekends">
+                      <SelectTrigger id="availability">
+                        <SelectValue placeholder="Select availability" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekdays">Weekdays</SelectItem>
+                        <SelectItem value="weekends">Weekends</SelectItem>
+                        <SelectItem value="evenings">Evenings</SelectItem>
+                        <SelectItem value="anytime">Anytime</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">We'll prioritize opportunities during these times.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>Manage your security settings and protect your account.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Two-Factor Authentication</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="two-factor">Enable Two-Factor Authentication</Label>
+                      <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                    </div>
+                    <Switch id="two-factor" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Login Sessions</h3>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Current Session</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Chrome on macOS • San Francisco, CA • Active now
+                        </p>
+                      </div>
+                      <Badge>Current</Badge>
+                    </div>
+                  </div>
+
+                  <div className="rounded-md border p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Previous Session</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Safari on iPhone • San Francisco, CA • 2 days ago
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        Revoke
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <Button variant="outline" className="mt-4">
+                  Log Out of All Sessions
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-medium">Account Activity</h3>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-4">
+                    <h4 className="font-medium">Password Changed</h4>
+                    <p className="text-sm text-muted-foreground">2 weeks ago • San Francisco, CA</p>
+                  </div>
+
+                  <div className="rounded-md border p-4">
+                    <h4 className="font-medium">Email Login</h4>
+                    <p className="text-sm text-muted-foreground">3 weeks ago • San Francisco, CA</p>
+                  </div>
+                </div>
+
+                <Button variant="outline" className="mt-4">
+                  View Full Activity Log
+                </Button>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

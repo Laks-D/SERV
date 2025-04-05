@@ -1,0 +1,349 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function EventsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+
+#loading.tsx
+export default function Loading() {
+  return null
+}
+
+#page.tsx
+"use client"
+
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { Calendar, ChevronLeft, ChevronRight, Clock, Filter, MapPin, Plus, Search, Users } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { EventRegistrationModal } from "@/components/events/event-registration-modal"
+import { getEvents, type Event } from "@/lib/events"
+import { getSession, type User } from "@/lib/auth"
+import { AuthModal } from "@/components/auth/auth-modal"
+
+export default function EventsPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [events, setEvents] = useState<Event[]>([])
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+
+      // Get user session
+      const session = await getSession()
+      setUser(session)
+
+      // Get events
+      const fetchedEvents = await getEvents()
+      setEvents(fetchedEvents)
+
+      setIsLoading(false)
+    }
+
+    loadData()
+  }, [])
+
+  const filteredEvents = events.filter(
+    (event) =>
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const userEvents = events.filter((event) => user && event.registeredUsers.includes(user.id))
+
+  const nextMonth = () => {
+    const next = new Date(currentMonth)
+    next.setMonth(next.getMonth() + 1)
+    setCurrentMonth(next)
+  }
+
+  const prevMonth = () => {
+    const prev = new Date(currentMonth)
+    prev.setMonth(prev.getMonth() - 1)
+    setCurrentMonth(prev)
+  }
+
+  const monthName = currentMonth.toLocaleString("default", { month: "long", year: "numeric" })
+
+  const handleRegisterClick = (event: Event) => {
+    if (!user) {
+      setAuthModalOpen(true)
+      return
+    }
+
+    setSelectedEvent(event)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Events</h1>
+          <p className="text-muted-foreground">Loading events...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Events</h1>
+          <p className="text-muted-foreground">Discover and join eco-friendly events in your community.</p>
+        </div>
+        <Button onClick={user ? undefined : () => setAuthModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Event
+        </Button>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="environment">Environment</SelectItem>
+              <SelectItem value="education">Education</SelectItem>
+              <SelectItem value="community">Community</SelectItem>
+            </SelectContent>
+          </Select>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Filter Events</SheetTitle>
+                <SheetDescription>Narrow down events based on your preferences.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-6">
+                {/* Filter options would go here */}
+                <Button className="w-full">Apply Filters</Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      <Tabs defaultValue="list">
+        <TabsList>
+          <TabsTrigger value="list">List View</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsTrigger value="my-events">My Events</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list" className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredEvents.map((event) => (
+              <Card key={event.id} className="overflow-hidden">
+                <div className="relative">
+                  <Image
+                    src={event.image || "/placeholder.svg"}
+                    alt={event.title}
+                    width={400}
+                    height={200}
+                    className="aspect-video w-full object-cover"
+                  />
+                  <Badge className="absolute right-2 top-2 bg-primary text-primary-foreground">{event.category}</Badge>
+                </div>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="line-clamp-1 text-lg">{event.title}</CardTitle>
+                  <CardDescription className="line-clamp-1">{event.organization}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <p className="line-clamp-2 text-sm text-muted-foreground">{event.description}</p>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span>{event.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      <span>{event.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <MapPin className="h-3 w-3 text-muted-foreground" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <Users className="h-3 w-3 text-muted-foreground" />
+                      <span>
+                        {event.attendees} of {event.maxAttendees} spots filled
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                  {user && event.registeredUsers.includes(user.id) ? (
+                    <Button variant="outline" className="w-full">
+                      Registered
+                    </Button>
+                  ) : (
+                    <Button className="w-full" onClick={() => handleRegisterClick(event)}>
+                      Register
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle>{monthName}</CardTitle>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="icon" onClick={prevMonth}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={nextMonth}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                  <div key={day} className="py-2 text-sm font-medium">
+                    {day}
+                  </div>
+                ))}
+                {Array.from({ length: 35 }).map((_, i) => (
+                  <div key={i} className="aspect-square rounded-md border p-1 text-sm hover:bg-muted">
+                    <div className="flex h-full flex-col">
+                      <span className="ml-1">{(i % 31) + 1}</span>
+                      {i === 14 && (
+                        <div className="mt-auto">
+                          <Badge className="w-full justify-start truncate bg-primary/10 text-xs font-normal text-primary">
+                            Beach Cleanup
+                          </Badge>
+                        </div>
+                      )}
+                      {i === 15 && (
+                        <div className="mt-auto">
+                          <Badge className="w-full justify-start truncate bg-primary/10 text-xs font-normal text-primary">
+                            Tree Planting
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="my-events">
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold">Upcoming Events</h2>
+            {userEvents.length > 0 ? (
+              userEvents.map((event) => (
+                <Card key={event.id}>
+                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+                      <Image src={event.image || "/placeholder.svg"} alt={event.title} fill className="object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{event.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {event.date} • {event.time}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{event.location}</p>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button size="sm" variant="outline">
+                        View Details
+                      </Button>
+                      <Button size="sm" variant="destructive">
+                        Cancel
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No Registered Events</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  You haven't registered for any events yet. Browse events to find opportunities.
+                </p>
+                <Button className="mt-4">Browse Events</Button>
+              </div>
+            )}
+
+            <h2 className="text-lg font-semibold">Past Events</h2>
+            <Card>
+              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+                  <Image
+                    src="/placeholder.svg?height=80&width=80&text=Past+Event"
+                    alt="Past Event"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Earth Day Celebration</h3>
+                  <p className="text-sm text-muted-foreground">April 22, 2024 • 10:00 AM - 2:00 PM</p>
+                  <p className="text-sm text-muted-foreground">City Park</p>
+                </div>
+                <div>
+                  <Button size="sm" variant="outline">
+                    View Details
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {selectedEvent && (
+        <EventRegistrationModal event={selectedEvent} isOpen={!!selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} defaultView="login" />
+    </div>
+  )
+}

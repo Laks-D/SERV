@@ -1,0 +1,316 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function FeedLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+#page.tsx
+"use client"
+
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { Award, Calendar, Leaf, MessageCircle, MoreHorizontal, Share2, ThumbsUp } from "lucide-react"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { CreatePostForm } from "@/components/feed/create-post-form"
+import { getPosts, likePost, type Post } from "@/lib/feed"
+import { getSession, type User } from "@/lib/auth"
+import { AuthModal } from "@/components/auth/auth-modal"
+
+export default function FeedPage() {
+  const [activeTab, setActiveTab] = useState("all")
+  const [posts, setPosts] = useState<Post[]>([])
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+
+      // Get user session
+      const session = await getSession()
+      setUser(session)
+
+      // Get posts
+      const fetchedPosts = await getPosts()
+      setPosts(fetchedPosts)
+
+      setIsLoading(false)
+    }
+
+    loadData()
+  }, [])
+
+  const filteredPosts = activeTab === "all" ? posts : posts.filter((post) => post.type === activeTab)
+
+  const handleLikePost = async (postId: string) => {
+    if (!user) {
+      setAuthModalOpen(true)
+      return
+    }
+
+    const result = await likePost(postId)
+
+    if (result.success) {
+      setPosts(posts.map((post) => (post.id === postId ? { ...post, likes: post.likes + 1 } : post)))
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Feed</h1>
+          <p className="text-muted-foreground">Loading feed...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Feed</h1>
+        <p className="text-muted-foreground">Stay updated with your community and discover new opportunities.</p>
+      </div>
+
+      {/* Create Post */}
+      <Card>
+        <CardContent className="p-4">
+          {user ? (
+            <CreatePostForm user={user} />
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Avatar>
+                  <AvatarFallback>?</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Input
+                    placeholder="Sign in to share an update or achievement..."
+                    className="h-10"
+                    onClick={() => setAuthModalOpen(true)}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" size="sm" onClick={() => setAuthModalOpen(true)}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Event
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setAuthModalOpen(true)}>
+                  <Award className="mr-2 h-4 w-4" />
+                  Achievement
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setAuthModalOpen(true)}>
+                  <Leaf className="mr-2 h-4 w-4" />
+                  Eco-Action
+                </Button>
+                <Button size="sm" onClick={() => setAuthModalOpen(true)}>
+                  Sign In to Post
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Feed Tabs */}
+      <Tabs defaultValue="all" onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="personal">Personal</TabsTrigger>
+          <TabsTrigger value="promotional">Opportunities</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="space-y-4 pt-4">
+          {filteredPosts.map((post) => (
+            <FeedPostCard
+              key={post.id}
+              post={post}
+              onLike={() => handleLikePost(post.id)}
+              isAuthenticated={!!user}
+              openAuthModal={() => setAuthModalOpen(true)}
+            />
+          ))}
+        </TabsContent>
+        <TabsContent value="personal" className="space-y-4 pt-4">
+          {filteredPosts.map((post) => (
+            <FeedPostCard
+              key={post.id}
+              post={post}
+              onLike={() => handleLikePost(post.id)}
+              isAuthenticated={!!user}
+              openAuthModal={() => setAuthModalOpen(true)}
+            />
+          ))}
+        </TabsContent>
+        <TabsContent value="promotional" className="space-y-4 pt-4">
+          {filteredPosts.map((post) => (
+            <FeedPostCard
+              key={post.id}
+              post={post}
+              onLike={() => handleLikePost(post.id)}
+              isAuthenticated={!!user}
+              openAuthModal={() => setAuthModalOpen(true)}
+            />
+          ))}
+        </TabsContent>
+      </Tabs>
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} defaultView="login" />
+    </div>
+  )
+}
+
+function FeedPostCard({
+  post,
+  onLike,
+  isAuthenticated,
+  openAuthModal,
+}: {
+  post: Post
+  onLike: () => void
+  isAuthenticated: boolean
+  openAuthModal: () => void
+}) {
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(post.likes)
+
+  const handleLike = () => {
+    if (!isAuthenticated) {
+      openAuthModal()
+      return
+    }
+
+    if (liked) {
+      setLikeCount((prev) => prev - 1)
+    } else {
+      setLikeCount((prev) => prev + 1)
+      onLike()
+    }
+    setLiked(!liked)
+  }
+
+  // Mock author data - in a real app, you would fetch this from the backend
+  const author = {
+    name:
+      post.authorId === "1"
+        ? "Jane Doe"
+        : post.authorId === "2"
+          ? "Green Earth Organization"
+          : post.authorId === "3"
+            ? "John Smith"
+            : post.authorId === "4"
+              ? "EcoWarriors Team"
+              : "City Parks Department",
+    avatar: `/placeholder.svg?height=40&width=40&text=${post.authorId}`,
+    verified: post.authorId === "1" || post.authorId === "2" || post.authorId === "4",
+  }
+
+  // Format relative time
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+    if (diffInSeconds < 60) return "just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+
+    return date.toLocaleDateString()
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start gap-4 p-4 pb-0">
+        <Avatar>
+          <AvatarImage src={author.avatar} alt={author.name} />
+          <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">{author.name}</span>
+            {author.verified && (
+              <Badge variant="outline" className="h-5 rounded-full bg-primary/10 px-2 text-xs font-normal text-primary">
+                Verified
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">{getRelativeTime(post.createdAt)}</p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">More options</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Save post</DropdownMenuItem>
+            <DropdownMenuItem>Hide post</DropdownMenuItem>
+            <DropdownMenuItem>Report</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="p-4 pt-2">
+        <p className="mb-4">{post.content}</p>
+        {post.badge && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg bg-muted p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              {post.badge.icon === "Leaf" ? <Leaf className="h-5 w-5" /> : <Award className="h-5 w-5" />}
+            </div>
+            <div>
+              <p className="font-medium">Earned New Badge</p>
+              <p className="text-sm text-muted-foreground">{post.badge.label}</p>
+            </div>
+          </div>
+        )}
+        {post.image && (
+          <div className="overflow-hidden rounded-lg">
+            <Image
+              src={post.image || "/placeholder.svg"}
+              alt="Post image"
+              width={600}
+              height={400}
+              className="aspect-video w-full object-cover"
+            />
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex items-center justify-between p-4 pt-0">
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <ThumbsUp className="h-4 w-4" />
+          <span>{likeCount}</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" className={liked ? "text-primary" : ""} onClick={handleLike}>
+            <ThumbsUp className="mr-1 h-4 w-4" />
+            Like
+          </Button>
+          <Button variant="ghost" size="sm" onClick={isAuthenticated ? undefined : openAuthModal}>
+            <MessageCircle className="mr-1 h-4 w-4" />
+            Comment
+          </Button>
+          <Button variant="ghost" size="sm" onClick={isAuthenticated ? undefined : openAuthModal}>
+            <Share2 className="mr-1 h-4 w-4" />
+            Share
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}

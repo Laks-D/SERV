@@ -1,0 +1,374 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function RewardsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+#loading.tsx
+export default function Loading() {
+  return null
+}
+#page.tsx
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Coins, Filter, Search, ShoppingBag, Tag } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+interface Reward {
+  id: number
+  name: string
+  description: string
+  image: string
+  price: number
+  category: string
+  partner: string
+  inStock: boolean
+  featured?: boolean
+}
+
+export default function RewardsPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedReward, setSelectedReward] = useState<Reward | null>(null)
+
+  const rewards: Reward[] = [
+    {
+      id: 1,
+      name: "Eco-Friendly Water Bottle",
+      description: "Reusable stainless steel water bottle with the Servease logo.",
+      image: "/placeholder.svg?height=200&width=400&text=Water+Bottle",
+      price: 500,
+      category: "Merchandise",
+      partner: "Servease",
+      inStock: true,
+      featured: true,
+    },
+    {
+      id: 2,
+      name: "Organic Cotton T-Shirt",
+      description: "100% organic cotton t-shirt with eco-friendly design.",
+      image: "/placeholder.svg?height=200&width=400&text=T-Shirt",
+      price: 750,
+      category: "Apparel",
+      partner: "Eco Threads",
+      inStock: true,
+      featured: true,
+    },
+    {
+      id: 3,
+      name: "$10 Gift Card to Green Cafe",
+      description: "Gift card to a local eco-friendly cafe that uses sustainable ingredients.",
+      image: "/placeholder.svg?height=200&width=400&text=Gift+Card",
+      price: 1000,
+      category: "Gift Cards",
+      partner: "Green Cafe",
+      inStock: true,
+    },
+    {
+      id: 4,
+      name: "Bamboo Utensil Set",
+      description: "Portable bamboo utensil set with carrying case.",
+      image: "/placeholder.svg?height=200&width=400&text=Utensil+Set",
+      price: 450,
+      category: "Home Goods",
+      partner: "Eco Living",
+      inStock: true,
+    },
+    {
+      id: 5,
+      name: "Plant a Tree in Your Name",
+      description: "We'll plant a tree in your name in a reforestation project.",
+      image: "/placeholder.svg?height=200&width=400&text=Plant+Tree",
+      price: 300,
+      category: "Donations",
+      partner: "Forest Alliance",
+      inStock: true,
+    },
+    {
+      id: 6,
+      name: "Recycled Notebook",
+      description: "Notebook made from 100% recycled paper.",
+      image: "/placeholder.svg?height=200&width=400&text=Notebook",
+      price: 250,
+      category: "Stationery",
+      partner: "Green Paper Co.",
+      inStock: true,
+    },
+    {
+      id: 7,
+      name: "Eco-Friendly Tote Bag",
+      description: "Reusable tote bag made from recycled materials.",
+      image: "/placeholder.svg?height=200&width=400&text=Tote+Bag",
+      price: 350,
+      category: "Apparel",
+      partner: "Eco Threads",
+      inStock: true,
+    },
+    {
+      id: 8,
+      name: "Solar-Powered Phone Charger",
+      description: "Portable solar-powered phone charger for eco-friendly charging on the go.",
+      image: "/placeholder.svg?height=200&width=400&text=Solar+Charger",
+      price: 1200,
+      category: "Electronics",
+      partner: "Green Tech",
+      inStock: false,
+    },
+    {
+      id: 9,
+      name: "Donation to Ocean Cleanup",
+      description: "Donate LifeCoins to support ocean cleanup efforts.",
+      image: "/placeholder.svg?height=200&width=400&text=Ocean+Cleanup",
+      price: 500,
+      category: "Donations",
+      partner: "Ocean Conservation Group",
+      inStock: true,
+    },
+  ]
+
+  const filteredRewards = rewards.filter(
+    (reward) =>
+      reward.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      reward.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      reward.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      reward.partner.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const featuredRewards = filteredRewards.filter((r) => r.featured)
+  const merchandiseRewards = filteredRewards.filter((r) => r.category === "Merchandise" || r.category === "Apparel")
+  const donationRewards = filteredRewards.filter((r) => r.category === "Donations")
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Rewards Store</h1>
+          <p className="text-muted-foreground">Redeem your LifeCoins for eco-friendly products and donations.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1">
+            <Coins className="h-5 w-5 text-primary" />
+            <span className="font-medium">1,250 LifeCoins</span>
+          </div>
+          <Button variant="outline">
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            My Orders
+          </Button>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search rewards..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="merchandise">Merchandise</SelectItem>
+              <SelectItem value="apparel">Apparel</SelectItem>
+              <SelectItem value="gift-cards">Gift Cards</SelectItem>
+              <SelectItem value="home-goods">Home Goods</SelectItem>
+              <SelectItem value="donations">Donations</SelectItem>
+              <SelectItem value="electronics">Electronics</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            Filters
+          </Button>
+        </div>
+      </div>
+
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">All Rewards</TabsTrigger>
+          <TabsTrigger value="featured">Featured</TabsTrigger>
+          <TabsTrigger value="merchandise">Merchandise</TabsTrigger>
+          <TabsTrigger value="donations">Donations</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-6 pt-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredRewards.map((reward) => (
+              <RewardCard key={reward.id} reward={reward} onSelect={() => setSelectedReward(reward)} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="featured" className="space-y-6 pt-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredRewards.map((reward) => (
+              <RewardCard key={reward.id} reward={reward} onSelect={() => setSelectedReward(reward)} />
+            ))}
+
+            {featuredRewards.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                <Tag className="h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No Featured Rewards</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  There are no featured rewards at the moment. Check back later!
+                </p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="merchandise" className="space-y-6 pt-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {merchandiseRewards.map((reward) => (
+              <RewardCard key={reward.id} reward={reward} onSelect={() => setSelectedReward(reward)} />
+            ))}
+
+            {merchandiseRewards.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No Merchandise</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  There are no merchandise rewards available at the moment.
+                </p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="donations" className="space-y-6 pt-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {donationRewards.map((reward) => (
+              <RewardCard key={reward.id} reward={reward} onSelect={() => setSelectedReward(reward)} />
+            ))}
+
+            {donationRewards.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                <Coins className="h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No Donations</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  There are no donation options available at the moment.
+                </p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {selectedReward && <RewardDialog reward={selectedReward} onClose={() => setSelectedReward(null)} />}
+    </div>
+  )
+}
+
+function RewardCard({
+  reward,
+  onSelect,
+}: {
+  reward: Reward
+  onSelect: () => void
+}) {
+  const { name, description, image, price, category, partner, inStock, featured } = reward
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="relative">
+        <Image
+          src={image || "/placeholder.svg"}
+          alt={name}
+          width={400}
+          height={200}
+          className="aspect-video w-full object-cover"
+        />
+        <Badge className="absolute right-2 top-2 bg-primary text-primary-foreground">{category}</Badge>
+        {featured && <Badge className="absolute left-2 top-2 bg-secondary text-secondary-foreground">Featured</Badge>}
+      </div>
+      <CardHeader className="p-4 pb-0">
+        <CardTitle className="line-clamp-1 text-lg">{name}</CardTitle>
+        <CardDescription className="line-clamp-1">Partner: {partner}</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 pt-2">
+        <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
+        <div className="mt-3 flex items-center gap-2">
+          <Coins className="h-4 w-4 text-primary" />
+          <span className="font-medium">{price} LifeCoins</span>
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0">
+        <Button className="w-full" onClick={onSelect} disabled={!inStock}>
+          {inStock ? "Redeem" : "Out of Stock"}
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
+
+function RewardDialog({
+  reward,
+  onClose,
+}: {
+  reward: Reward
+  onClose: () => void
+}) {
+  const { name, description, image, price, category, partner, inStock } = reward
+
+  return (
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>{name}</DialogTitle>
+          <DialogDescription>Partner: {partner}</DialogDescription>
+        </DialogHeader>
+        <div className="relative aspect-video w-full overflow-hidden rounded-md">
+          <Image src={image || "/placeholder.svg"} alt={name} fill className="object-cover" />
+        </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Badge>{category}</Badge>
+            <div className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" />
+              <span className="text-lg font-bold">{price} LifeCoins</span>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">{description}</p>
+          {!inStock && (
+            <div className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+              This item is currently out of stock. Please check back later.
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button disabled={!inStock}>Confirm Redemption</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

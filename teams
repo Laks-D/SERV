@@ -1,0 +1,297 @@
+#layout.tsx
+import type React from "react"
+import { AuthLayout } from "@/components/layout/auth-layout"
+
+export default function TeamsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <AuthLayout>{children}</AuthLayout>
+}
+#loading.tsx
+export default function Loading() {
+  return null
+}
+#page.tsx
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Award, Calendar, Plus, Search, Users } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+
+interface Team {
+  id: number
+  name: string
+  description: string
+  image: string
+  members: number
+  maxMembers: number
+  category: string
+  achievements: number
+  volunteerHours: number
+  upcomingEvents: number
+  isMember?: boolean
+}
+
+export default function TeamsPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const teams: Team[] = [
+    {
+      id: 1,
+      name: "Green Warriors",
+      description: "A team dedicated to reforestation and tree planting initiatives.",
+      image: "/placeholder.svg?height=200&width=400&text=Green+Warriors",
+      members: 24,
+      maxMembers: 30,
+      category: "Environment",
+      achievements: 12,
+      volunteerHours: 450,
+      upcomingEvents: 2,
+      isMember: true,
+    },
+    {
+      id: 2,
+      name: "Ocean Guardians",
+      description: "Focused on beach cleanups and marine conservation efforts.",
+      image: "/placeholder.svg?height=200&width=400&text=Ocean+Guardians",
+      members: 18,
+      maxMembers: 25,
+      category: "Environment",
+      achievements: 8,
+      volunteerHours: 320,
+      upcomingEvents: 1,
+    },
+    {
+      id: 3,
+      name: "Urban Farmers",
+      description: "Working on community gardens and sustainable urban agriculture.",
+      image: "/placeholder.svg?height=200&width=400&text=Urban+Farmers",
+      members: 15,
+      maxMembers: 20,
+      category: "Agriculture",
+      achievements: 6,
+      volunteerHours: 280,
+      upcomingEvents: 3,
+    },
+    {
+      id: 4,
+      name: "Wildlife Protectors",
+      description: "Dedicated to protecting and preserving local wildlife and habitats.",
+      image: "/placeholder.svg?height=200&width=400&text=Wildlife+Protectors",
+      members: 12,
+      maxMembers: 20,
+      category: "Wildlife",
+      achievements: 5,
+      volunteerHours: 210,
+      upcomingEvents: 1,
+    },
+    {
+      id: 5,
+      name: "Eco Educators",
+      description: "Focused on environmental education and awareness programs.",
+      image: "/placeholder.svg?height=200&width=400&text=Eco+Educators",
+      members: 10,
+      maxMembers: 15,
+      category: "Education",
+      achievements: 4,
+      volunteerHours: 180,
+      upcomingEvents: 2,
+    },
+    {
+      id: 6,
+      name: "Waste Warriors",
+      description: "Tackling waste management and recycling initiatives.",
+      image: "/placeholder.svg?height=200&width=400&text=Waste+Warriors",
+      members: 8,
+      maxMembers: 15,
+      category: "Waste Management",
+      achievements: 3,
+      volunteerHours: 150,
+      upcomingEvents: 1,
+    },
+  ]
+
+  const filteredTeams = teams.filter(
+    (team) =>
+      team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      team.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      team.category.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Teams</h1>
+          <p className="text-muted-foreground">Join or create teams to collaborate on eco-friendly initiatives.</p>
+        </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Team
+        </Button>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search teams..."
+          className="pl-9"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      <Tabs defaultValue="discover">
+        <TabsList>
+          <TabsTrigger value="discover">Discover</TabsTrigger>
+          <TabsTrigger value="my-teams">My Teams</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="discover" className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTeams.map((team) => (
+              <Card key={team.id} className="overflow-hidden">
+                <div className="relative">
+                  <Image
+                    src={team.image || "/placeholder.svg"}
+                    alt={team.name}
+                    width={400}
+                    height={200}
+                    className="aspect-video w-full object-cover"
+                  />
+                  <Badge className="absolute right-2 top-2 bg-primary text-primary-foreground">{team.category}</Badge>
+                </div>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="line-clamp-1 text-lg">{team.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">{team.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>{team.members} members</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{team.maxMembers - team.members} spots left</span>
+                    </div>
+                    <Progress value={(team.members / team.maxMembers) * 100} className="h-1" />
+                    <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
+                      <div>
+                        <div className="font-medium">{team.achievements}</div>
+                        <div className="text-muted-foreground">Achievements</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">{team.volunteerHours}</div>
+                        <div className="text-muted-foreground">Hours</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">{team.upcomingEvents}</div>
+                        <div className="text-muted-foreground">Events</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                  {team.isMember ? (
+                    <Button variant="outline" className="w-full">
+                      View Team
+                    </Button>
+                  ) : (
+                    <Button className="w-full">Join Team</Button>
+                  )}
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="my-teams">
+          <div className="space-y-6">
+            {teams
+              .filter((team) => team.isMember)
+              .map((team) => (
+                <Card key={team.id}>
+                  <CardContent className="p-0">
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <div className="relative h-40 sm:h-auto sm:w-40">
+                        <Image
+                          src={team.image || "/placeholder.svg"}
+                          alt={team.name}
+                          fill
+                          className="object-cover sm:rounded-l-lg"
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col p-4">
+                        <div className="mb-2 flex items-start justify-between">
+                          <div>
+                            <h3 className="text-lg font-bold">{team.name}</h3>
+                            <p className="text-sm text-muted-foreground">{team.description}</p>
+                          </div>
+                          <Badge>{team.category}</Badge>
+                        </div>
+
+                        <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+                          <div>
+                            <div className="flex flex-col items-center gap-1">
+                              <Award className="h-5 w-5 text-primary" />
+                              <div className="font-medium">{team.achievements}</div>
+                              <div className="text-xs text-muted-foreground">Achievements</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex flex-col items-center gap-1">
+                              <Users className="h-5 w-5 text-primary" />
+                              <div className="font-medium">{team.members}</div>
+                              <div className="text-xs text-muted-foreground">Members</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex flex-col items-center gap-1">
+                              <Calendar className="h-5 w-5 text-primary" />
+                              <div className="font-medium">{team.upcomingEvents}</div>
+                              <div className="text-xs text-muted-foreground">Events</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Button size="sm">View Team</Button>
+                          <Button size="sm" variant="outline">
+                            Invite Members
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Leave Team
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+            {teams.filter((team) => team.isMember).length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                <Users className="h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No Teams Yet</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  You haven't joined any teams yet. Discover and join teams to collaborate on eco-friendly initiatives.
+                </p>
+                <Button className="mt-4">Discover Teams</Button>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

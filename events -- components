@@ -1,0 +1,124 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import { Calendar, Clock, Coins, MapPin, Users } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { type Event, registerForEvent } from "@/lib/events"
+import { useRouter } from "next/navigation"
+
+export function EventRegistrationModal({
+  event,
+  isOpen,
+  onClose,
+}: {
+  event: Event
+  isOpen: boolean
+  onClose: () => void
+}) {
+  const router = useRouter()
+  const [isRegistering, setIsRegistering] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  async function handleRegister() {
+    setIsRegistering(true)
+    setError(null)
+
+    const result = await registerForEvent(event.id)
+
+    if (result.error) {
+      setError(result.error)
+      setIsRegistering(false)
+      return
+    }
+
+    setSuccess(true)
+    setIsRegistering(false)
+    router.refresh()
+
+    // Close modal after a delay
+    setTimeout(() => {
+      onClose()
+      setSuccess(false)
+    }, 2000)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{event.title}</DialogTitle>
+          <DialogDescription>Hosted by {event.organization}</DialogDescription>
+        </DialogHeader>
+
+        <div className="relative aspect-video w-full overflow-hidden rounded-md">
+          <Image src={event.image || "/placeholder.svg"} alt={event.title} fill className="object-cover" />
+          <Badge className="absolute right-2 top-2 bg-primary text-primary-foreground">{event.category}</Badge>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">{event.description}</p>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>{event.date}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>{event.time}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span>
+                {event.attendees} of {event.maxAttendees} spots filled
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Coins className="h-4 w-4 text-primary" />
+              <span className="font-medium">Earn 150 LifeCoins</span>
+            </div>
+          </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert>
+              <AlertDescription>You have successfully registered for this event!</AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleRegister} disabled={isRegistering || success}>
+            {isRegistering ? "Registering..." : "Confirm Registration"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
